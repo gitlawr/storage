@@ -229,7 +229,7 @@ init() {
     echo -e "[default]\naliyun_access_key_id=${ECS_ACCESS_KEY_ID}\naliyun_access_key_secret=${ECS_ACCESS_KEY_SECRET}" > /root/.aliyuncli/credentials
     echo -e "[default]\noutput=json\nregion=${REGION_ID}" > /root/.aliyuncli/configure
 
-    log "> success"
+    log ">init success"
     print_success
 }
 
@@ -299,7 +299,7 @@ create() {
 
     do_format
 
-    log "> success, ${DISK_ID}"
+    log ">create success, ${DISK_ID}"
     print_options \
         created true \
         name ${disk_name} \
@@ -329,7 +329,7 @@ delete() {
         print_error "Failed in DeleteDisk ${DISK_ID}, response ${aliyun_call_result}"
     fi
 
-    log "> success"
+    log ">delete success"
     print_success
 }
 
@@ -377,7 +377,7 @@ attach() {
         device_path="${attach_result}"
     fi
 
-    log "> success, ${device_path}"
+    log "> attach success, ${device_path}"
     print_device "${device_path}"
 }
 
@@ -397,7 +397,7 @@ detach() {
             print_error "Failed in AttachDisk disk ${DISK_ID}, response ${detach_result}"
         fi
 
-        log "> success"
+        log "> detach success"
         print_success
     else
         log "> it isn't an attached device"
@@ -422,18 +422,19 @@ mountdest() {
     mkdir -p ${mount_point}
     if [ -d ${device_path} ]; then
         mount_result=$(mount --bind ${device_path} ${mount_point} 2>&1)
+        if [ $? -ne 0 ]; then
+            log "> fail, can't mount ${device_path} ${mountpoint}"
+            print_error "${mount_result}"
+        fi
     else
         mount_result=$(mount ${device_path} ${mount_point} 2>&1)
-    fi
-
-    if [ $? -ne 0 ]; then
         if [ $? -ne 0 ]; then
             log "> fail, can't mount ${device_path} ${mountpoint}"
             print_error "${mount_result}"
         fi
     fi
 
-    log "> success"
+    log "> mount success"
     print_success
 }
 
@@ -462,7 +463,7 @@ unmount() {
         fi
     fi
 
-    log "> success"
+    log ">unmount success"
     print_success "unmounted"
 }
 
