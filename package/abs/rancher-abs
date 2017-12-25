@@ -185,7 +185,7 @@ detach_aliyun_disk() {
     local instance_of_disk
     local aliyun_options
     local aliyun_call_result
-    instance_of_disk=$(aliyuncli ecs DescribeDisks --DiskIds '["${DISK_ID}"]' --filter Disks.Disk[0].InstanceId |sed 's/"//g')
+    instance_of_disk=$(aliyuncli ecs DescribeDisks --DiskIds "[\"${DISK_ID}\"]" --filter Disks.Disk[0].InstanceId |sed 's/"//g')
     if [ $? -ne 0 ]; then
         log "\t>> fail DescribeDisks, ${instance_of_disk}"
         echo "${instance_of_disk}"
