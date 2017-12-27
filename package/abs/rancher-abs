@@ -64,11 +64,7 @@ get_attached_device_path() {
     fi
 
     # filter by both disk id & host id.
-    aliyun_call_result=$(echo "${aliyun_call_result}" | jq " .Disk[] | select(.DiskId==\"${DISK_ID}\") | select(.InstanceId==\"${INSTANCE_ID}\") | .Description" | sed 's/"//g')
-    # if [ -n "${aliyun_call_result}" ]; then
-    #     aliyun_call_result=$(echo "${aliyun_call_result}" | sed "s/\"//g")
-    # fi
-    aliyun_call_result=${aliyun_call_result#rancher_abs}
+    aliyun_call_result=$(echo "${aliyun_call_result}" | jq " .Disk[] | select(.DiskId==\"${DISK_ID}\") | select(.InstanceId==\"${INSTANCE_ID}\") | .Device" | sed 's/"//g')
     echo "${aliyun_call_result}"
 }
 
@@ -85,7 +81,7 @@ is_device_path_attaching() {
         print_error "Failed in DescribeDisks instance ${INSTANCE_ID}, response ${aliyun_call_result}"
     fi
 
-    DISK_ID=$(echo "${aliyun_call_result}" | jq " .Disk[] | select(.Description==\"rancher_abs${device_path}\") | .DiskId" | sed 's/"//g')
+    DISK_ID=$(echo "${aliyun_call_result}" | jq " .Disk[] | select(.Device==\"${device_path}\") | .DiskId" | sed 's/"//g')
     if [ -z "${DISK_ID}" ]; then
         exit 1
     fi
