@@ -6,6 +6,8 @@ import (
 	"errors"
 	"os"
 	"os/exec"
+
+	"github.com/Sirupsen/logrus"
 )
 
 const (
@@ -26,6 +28,7 @@ type CmdOutput struct {
 func (d *RancherStorageDriver) exec(command string, args ...string) (CmdOutput, error) {
 	result := CmdOutput{}
 	buf := &bytes.Buffer{}
+	logrus.Infof("executing command, %v,%v,%v", d.Command, command, args)
 	cmd := exec.Command(d.Command, append([]string{command}, args...)...)
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = buf
