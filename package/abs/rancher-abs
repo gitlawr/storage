@@ -81,7 +81,7 @@ is_device_path_attaching() {
         print_error "Failed in DescribeDisks instance ${INSTANCE_ID}, response ${aliyun_call_result}"
     fi
 
-    device_path= echo "${device_path}" | sed 's/vd/xvd/g'
+    device_path=$(echo "${device_path}" | sed 's/vd/xvd/g')
     DISK_ID=$(echo "${aliyun_call_result}" | jq " .Disk[] | select(.Device==\"${device_path}\") | .DiskId" | sed 's/xvd/vd/g' | sed 's/"//g')
     if [ -z "${DISK_ID}" ]; then
         exit 1
@@ -305,7 +305,9 @@ create() {
 
     listening_aliyun_disk "Creating" "Available"
 
-    do_format
+    if [ -z "${snapshot_id}" ]; then
+        do_format
+    fi
 
     log ">create success, ${DISK_ID}"
     print_options \
