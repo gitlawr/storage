@@ -73,19 +73,6 @@ get_attached_device_path() {
 }
 
 
-# Find avaiable device path in os, such as '/dev/vdb', '/dev/vdc',..., '/dev/vdz'
-find_available_device_path() {
-    local last_attach_device=$(lsblk -o KNAME,MOUNTPOINT | sed -e 's/^/\/dev\//' | awk '{if($2 ~ /^\w*$/){print $1}}' | awk 'END{print}')
-    local mounted_attach_device=$(df -h | grep -w ${last_attach_device} | awk '{print $6}')
-
-    if [ -n "${mounted_attach_device}" ]; then
-        echo "${last_attach_device} is using on ${mounted_attach_device}"
-        exit 1
-    else
-        echo "${last_attach_device}"
-    fi
-}
-
 
 # Judge device path has been attached and get the attached disk id
 is_device_path_attaching() {
@@ -142,7 +129,7 @@ attach_aliyun_disk() {
     local delete_with_instance=${1:-"false"}
     local aliyun_call_result
     local detach_result
-    local get_system_available_device_path_result
+    local attached_device_path
     local aliyun_options="--InstanceId ${INSTANCE_ID} --DiskId ${DISK_ID} --DeleteWithInstance ${delete_with_instance}"
     aliyun_call_result=$(aliyuncli ecs AttachDisk ${aliyun_options} --output json 2>&1)
     if [ $? -ne 0 ]; then
@@ -158,21 +145,21 @@ attach_aliyun_disk() {
     fi
     listening_aliyun_disk "Available" "In_use"
 
-    get_system_available_device_path_result=$(find_available_device_path)
+    attached_device_path=$(get_attached_device_path)
     if [ $? -ne 0 ]; then
-        log "\t>> fail, ${get_system_available_device_path_result}"
-        echo "${get_system_available_device_path_result}"
+        log "\t>> fail, ${attached_device_path}"
+        echo "${attached_device_path}"
         exit 1
     else
-        aliyun_options="--DiskId ${DISK_ID} --Description rancher_abs${get_system_available_device_path_result}"
+        aliyun_options="--DiskId ${DISK_ID} --Description rancher_abs${attached_device_path}"
         aliyun_call_result=$(aliyuncli ecs ModifyDiskAttribute ${aliyun_options} --output json 2>&1)
         if [ $? -ne 0 ]; then
             log "\t>> fail, ${aliyun_call_result}"
             echo "${aliyun_call_result}"
             exit 1
         else
-            log "\t>> success, ${get_system_available_device_path_result}"
-            echo "${get_system_available_device_path_result}"
+            log "\t>> success, ${attached_device_path}"
+            echo "${attached_device_path}"
         fi
     fi
     
