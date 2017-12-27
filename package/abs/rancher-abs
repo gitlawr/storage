@@ -81,6 +81,7 @@ is_device_path_attaching() {
         print_error "Failed in DescribeDisks instance ${INSTANCE_ID}, response ${aliyun_call_result}"
     fi
 
+    device_path= echo "${device_path}" | sed 's/vd/xvd/g'
     DISK_ID=$(echo "${aliyun_call_result}" | jq " .Disk[] | select(.Device==\"${device_path}\") | .DiskId" | sed 's/xvd/vd/g' | sed 's/"//g')
     if [ -z "${DISK_ID}" ]; then
         exit 1
